@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.zerock.springex.mapper.TodoMapper">
+    <select id="getTime" resultType="string">
+        SELECT now()
+    </select>
+    <insert id="insert">
+        INSERT INTO tbl_todo (title,dueDate,writer)
+        VALUES (#{title}, #{dueDate}, #{writer})
+    </insert>
+    <select id="selectAll" resultType="org.zerock.springex.domain.TodoVO">
+        SELECT * FROM tbl_todo ORDER BY tno DESC
+    </select>
+    <select id="selectOne" resultType="org.zerock.springex.domain.TodoVO">
+        SELECT * FROM tbl_todo WHERE tno = #{tno}
+    </select>
+    <delete id="delete">
+        DELETE FROM tbl_todo WHERE tno = #{tno}
+    </delete>
+    <update id="update">
+        UPDATE tbl_todo SET title=#{title} , dueDate=#{dueDate}, finished=#{finished}
+        WHERE tno = #{tno}
+    </update>
+<!--    페이징을 위한 sql 구문-->
+    <select id="selectList" resultType="org.zerock.springex.domain.TodoVO">
+        select * from tbl_todo
+        <include refid="search"></include>
+        order by tno desc limit #{skip}, #{size}
+    </select>
+<!--    페이징을 위한 전체 갯수 구하는 sql-->
+    <select id="getCount" resultType="int">
+        select count(tno) from tbl_todo
+        <include refid="search"></include>  -- 검색한 게시글의 페이지 갯수
+    </select>
+    <sql id="search">
+        <where>
+            <if test="types != null and types.length > 0">
+                <foreach collection="types" item="type" open="(" close=")" separator=" OR ">
+                    <if test="type == 't'.toString()">
+                        title like concat('%', #{keyword},'%')
+                    </if>
+                    <if test="type == 'w'.toString()">
+                        writer like concat('%', #{keyword},'%')
+                    </if>
+                </foreach>
+            </if>
+            <if test="finished">
+                <trim prefix="and">
+                    finished = 1
+                </trim>
+            </if>
+            <if test="from != null and to != null">
+                <trim prefix="and">
+                    dueDate between #{from} and #{to}
+                </trim>
+            </if>
+        </where>
+    </sql>
+
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
