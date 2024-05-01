@@ -8,12 +8,15 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.zerock.springex.dto.PageRequestDTO;
 import org.zerock.springex.dto.TodoDTO;
 import org.zerock.springex.service.TodoService;
 
 import javax.validation.Valid;
+import java.io.File;
+import java.io.IOException;
 
 // 깃 커밋 테스트 , 주석입니다.
 
@@ -102,15 +105,31 @@ public class TodoController {
 
 //  @RequestMapping(value = "/register", method= RequestMethod.GET)
   @GetMapping("/register")
-  public void register(){
-    log.info("todo register.......");
+  public String register( @Valid TodoDTO todoDTO, BindingResult bindingResult, RedirectAttributes redirectAttributes)  {
+    log.info("POST todo register.......");
+
+    if(bindingResult.hasErrors()) {
+      log.info("has errors......");
+      redirectAttributes.addFlashAttribute("errors", bindingResult.getAllErrors());
+      return "/todo/register";
+    }
+    log.info(todoDTO);
+    todoService.register(todoDTO);
+    return "redirect:/todo/list";
   }
+
   //@RequestMapping(value = "/register", method= RequestMethod.POST)
   @PostMapping("/register")
-  public String registerPost(@Valid TodoDTO todoDTO,
+  public String registerPost(MultipartFile file,@Valid TodoDTO todoDTO,
                              BindingResult bindingResult,
-                             RedirectAttributes redirectAttributes){
+                             RedirectAttributes redirectAttributes) throws IOException {
     log.info("POST todo register.......");
+
+    log.info(file.getOriginalFilename()); // 실제 파일 이름 출력
+    log.info(file.getSize()); // 파일의 크기
+    log.info(file.getContentType()); // 파일의 확장자
+    file.transferTo(new File("c://files//" + file.getOriginalFilename())); // 파일을 저장하는 메서드 : new File("파일을 저장 할 경로 //파일이름.확장자")
+
     if(bindingResult.hasErrors()){
       log.info("has errors.......");
       redirectAttributes.addFlashAttribute("errors", bindingResult.getAllErrors());
